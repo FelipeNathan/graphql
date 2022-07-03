@@ -1,0 +1,49 @@
+schema {
+    query: Query
+}
+
+type Query {
+    user(id: Int): User
+    users: [User]!
+    openFinance: OpenFinanceData
+    teste: Teste
+}
+
+### User definition
+type User {
+    id: Int,
+    type: String,
+    name: String,
+    address: Address
+}
+
+type Address {
+    street: String
+}
+
+### Open Finance Definition
+type OpenFinanceData {
+    id: ID,
+    extracts: [Extract]
+}
+
+type Extract {
+    card: Card @Auth
+    balance: Float
+}
+
+type Card {
+    brand: String
+}
+
+### Another hierarchy definition
+type Teste {
+    subTeste: SubTeste
+}
+
+type SubTeste {
+    id: ID
+}
+
+directive @Auth on FIELD_DEFINITION
+directive @Required on FIELD
