@@ -1,8 +1,7 @@
 package com.pixpayx.graphql.instrumentation
 
-import graphql.ErrorType
+import com.pixpayx.graphql.exception.error.RequiredFieldError
 import graphql.ExecutionResult
-import graphql.GraphqlErrorBuilder
 import graphql.execution.FetchedValue
 import graphql.execution.instrumentation.InstrumentationContext
 import graphql.execution.instrumentation.SimpleInstrumentation
@@ -24,18 +23,11 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
 
     private fun addErrorIfNull(parameters: InstrumentationFieldCompleteParameters) {
 
-        if (!parameters.parsedFetchedValue.isNull()) {
+        if (!parameters.asFetchedValue.isNull()) {
             return
         }
 
-        val fieldName = parameters.singleField.name
-        val error = GraphqlErrorBuilder
-            .newError()
-            .errorType(ErrorType.DataFetchingException)
-            .message("Field $fieldName is marked as required")
-            .build()
-
-        parameters.executionContext.addError(error)
+        parameters.executionContext.addError(RequiredFieldError(parameters.fieldPath))
     }
 
     private fun FetchedValue?.isNull(): Boolean {
@@ -45,10 +37,13 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
             else -> value == null
         }
     }
+
+    private val InstrumentationFieldCompleteParameters.asFetchedValue: FetchedValue?
+        get() = fetchedValue as? FetchedValue
+
+    private val InstrumentationFieldCompleteParameters.singleField: Field
+        get() = executionStepInfo.field.singleField
+
+    private val InstrumentationFieldCompleteParameters.fieldPath: String
+        get() = executionStepInfo.path.toString()
 }
-
-val InstrumentationFieldCompleteParameters.parsedFetchedValue: FetchedValue?
-    get() = fetchedValue as? FetchedValue
-
-val InstrumentationFieldCompleteParameters.singleField: Field
-    get() = executionStepInfo.field.singleField

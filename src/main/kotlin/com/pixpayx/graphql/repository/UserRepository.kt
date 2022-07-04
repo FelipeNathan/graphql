@@ -11,5 +11,6 @@ class UserRepository {
 
 val users = listOf(
     User(1L, "CONSUMER", "Felipe"),
-    User(2L, "SELLER", "Xuão")
+    User(2L, "SELLER", "Xuão"),
+    User(3L, "OUTRO TIPO", "Baby Shark") // User without address
 )
