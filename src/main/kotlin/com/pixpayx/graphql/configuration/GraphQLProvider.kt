@@ -3,6 +3,7 @@ package com.pixpayx.graphql.configuration
 import com.pixpayx.graphql.directive.DirectiveResolver
 import com.pixpayx.graphql.resolver.GraphQLResolver
 import graphql.GraphQL
+import graphql.execution.instrumentation.ChainedInstrumentation
 import graphql.execution.instrumentation.Instrumentation
 import graphql.schema.idl.RuntimeWiring
 import graphql.schema.idl.SchemaGenerator
@@ -57,7 +58,7 @@ class GraphQLProvider(
     }
 
     private fun GraphQL.Builder.instrumentations(instrumentations: List<Instrumentation>): GraphQL.Builder {
-        instrumentations.forEach(this::instrumentation)
+        instrumentation(ChainedInstrumentation(instrumentations))
         return this
     }
 }
