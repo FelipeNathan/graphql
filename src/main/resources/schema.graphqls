@@ -24,7 +24,16 @@ type Address {
 ### Open Finance Definition
 type OpenFinanceData {
     id: ID,
-    extracts: [Extract]
+    ## Digamos que a gente queira verificar se existe pelo menos um cartão que seja do PicPay.
+    ##
+    ## A diretiva precisa ser colocada no nó superior ao que se quer validar, pois se colocada diretamente no campo,
+    ## a validação vai ser feita por cartão, dificultando o processo de validar se existe PELO MENOS um cartão em
+    ## meio a todos aqueles que satisfaça nossa condição.
+    ##
+    ## Essa foi a forma mais simples que consegui encontrar para adicionar essa diretiva. A limitação é uma:
+    ## - teríamos que criar uma diretiva específica pra cada caso de uso que queremos adicionar (como exemplo estou
+    ##   considerando que queremos validar se existe pelo menos um cartão que seja de uma brand X);
+    extracts: [Extract] @MustHaveCardBrand(value: "")
 }
 
 type Extract {
@@ -47,3 +56,4 @@ type SubTeste {
 
 directive @Auth on FIELD_DEFINITION
 directive @Required on FIELD
+directive @MustHaveCardBrand(value: String) on FIELD | FIELD_DEFINITION
