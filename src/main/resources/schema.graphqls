@@ -47,4 +47,4 @@ type SubTeste {
 
 directive @Auth on FIELD_DEFINITION
 directive @Required on FIELD
-directive @MustHaveCardBrand(brand: String) on FIELD
+directive @RequiredCardBrand(brand: String) on FIELD

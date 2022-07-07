@@ -2,33 +2,36 @@ package com.pixpayx.graphql.instrumentation
 
 import com.pixpayx.graphql.model.openfinance.Extract
 import graphql.ErrorType
-import graphql.ExecutionResult
 import graphql.GraphqlErrorBuilder
-import graphql.execution.FetchedValue
-import graphql.execution.instrumentation.InstrumentationContext
 import graphql.execution.instrumentation.SimpleInstrumentation
-import graphql.execution.instrumentation.parameters.InstrumentationFieldCompleteParameters
+import graphql.execution.instrumentation.parameters.InstrumentationFieldFetchParameters
 import graphql.language.Field
 import graphql.language.StringValue
+import graphql.schema.DataFetcher
+import graphql.schema.DataFetchingEnvironment
 import org.springframework.stereotype.Component
 
 @Component
 class MustHaveCardBrandDirectiveInstrumentation : SimpleInstrumentation() {
 
-    override fun beginFieldComplete(parameters: InstrumentationFieldCompleteParameters): InstrumentationContext<ExecutionResult> {
+    private val InstrumentationFieldFetchParameters.singleField: Field
+        get() = executionStepInfo.field.singleField
 
-        if (!parameters.singleField.hasDirective("MustHaveCardBrand")) {
-            return super.beginFieldComplete(parameters)
+    override fun instrumentDataFetcher(dataFetcher: DataFetcher<*>, parameters: InstrumentationFieldFetchParameters): DataFetcher<*> {
+
+        if (!parameters.singleField.hasDirective(DIRECTIVE_NAME)) {
+            return super.instrumentDataFetcher(dataFetcher, parameters)
         }
 
-        if (isDirectiveOnCorrectField(parameters)) {
-            addErrorIfDoNotContainCard(parameters)
+        return if (isDirectiveOnCorrectField(parameters)) {
+            val cardDataFetcher = overrideDataFetcher(dataFetcher, parameters)
+            super.instrumentDataFetcher(cardDataFetcher, parameters)
+        } else {
+            super.instrumentDataFetcher(dataFetcher, parameters)
         }
-
-        return super.beginFieldComplete(parameters)
     }
 
-    private fun isDirectiveOnCorrectField(parameters: InstrumentationFieldCompleteParameters): Boolean {
+    private fun isDirectiveOnCorrectField(parameters: InstrumentationFieldFetchParameters): Boolean {
         if (parameters.singleField.name == "extracts") {
             return true
         }
@@ -36,41 +39,43 @@ class MustHaveCardBrandDirectiveInstrumentation : SimpleInstrumentation() {
         val error = GraphqlErrorBuilder
             .newError()
             .errorType(ErrorType.ValidationError)
-            .message("Directive for wrong field")
+            .message("Directive is not for field ${parameters.singleField.name}")
             .build()
 
         parameters.executionContext.addError(error)
         return false
     }
 
-    private fun addErrorIfDoNotContainCard(parameters: InstrumentationFieldCompleteParameters) {
-        val requiredCard = parameters
+    private fun overrideDataFetcher(dataFetcher: DataFetcher<*>, parameters: InstrumentationFieldFetchParameters): DataFetcher<Any?> {
+        val requiredBrand = parameters
             .singleField
-            .getDirectives("MustHaveCardBrand")
+            .getDirectives(DIRECTIVE_NAME)
             .first()
-            .getArgument("brand")
+            .getArgument(DIRECTIVE_ARGUMENT)
             .value.run { this as StringValue }
             .value
 
+        return DataFetcher { env ->
+            val data = dataFetcher.extratcs(env)
+            if (!data.containsBrand(requiredBrand)) {
+                val error = GraphqlErrorBuilder
+                    .newError()
+                    .errorType(ErrorType.ValidationError)
+                    .message("Extract must have a card of $requiredBrand")
+                    .build()
 
-        if (!parameters.extracts.any { it.card.brand.contains(requiredCard) }) {
-            val error = GraphqlErrorBuilder
-                .newError()
-                .errorType(ErrorType.ValidationError)
-                .message("Extract must have a card of $requiredCard")
-                .build()
-
-            parameters.executionContext.addError(error)
-            return
+                parameters.executionContext.addError(error)
+                null
+            } else data
         }
     }
 
-    private val InstrumentationFieldCompleteParameters.extracts: List<Extract>
-        get() = ((fetchedValue as? FetchedValue)?.fetchedValue as? List<Extract>).orEmpty()
+    private fun List<Extract>.containsBrand(requiredBrand: String) = any { it.card.brand.contains(requiredBrand) }
 
-    private val InstrumentationFieldCompleteParameters.singleField: Field
-        get() = executionStepInfo.field.singleField
+    private fun DataFetcher<*>.extratcs(env: DataFetchingEnvironment): List<Extract> = this.get(env) as List<Extract>
 
-    private val InstrumentationFieldCompleteParameters.fieldPath: String
-        get() = executionStepInfo.path.toString()
+    companion object {
+        const val DIRECTIVE_NAME = "RequiredCardBrand"
+        const val DIRECTIVE_ARGUMENT = "brand"
+    }
 }
