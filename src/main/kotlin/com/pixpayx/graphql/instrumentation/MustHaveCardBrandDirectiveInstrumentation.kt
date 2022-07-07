@@ -23,12 +23,12 @@ class MustHaveCardBrandDirectiveInstrumentation : SimpleInstrumentation() {
             return super.instrumentDataFetcher(dataFetcher, parameters)
         }
 
-        return if (isDirectiveOnCorrectField(parameters)) {
+        if (isDirectiveOnCorrectField(parameters)) {
             val cardDataFetcher = overrideDataFetcher(dataFetcher, parameters)
-            super.instrumentDataFetcher(cardDataFetcher, parameters)
-        } else {
-            super.instrumentDataFetcher(dataFetcher, parameters)
+            return super.instrumentDataFetcher(cardDataFetcher, parameters)
         }
+
+        return super.instrumentDataFetcher(dataFetcher, parameters)
     }
 
     private fun isDirectiveOnCorrectField(parameters: InstrumentationFieldFetchParameters): Boolean {
@@ -56,7 +56,7 @@ class MustHaveCardBrandDirectiveInstrumentation : SimpleInstrumentation() {
             .value
 
         return DataFetcher { env ->
-            val data = dataFetcher.extratcs(env)
+            val data = dataFetcher.extracts(env)
             if (!data.containsBrand(requiredBrand)) {
                 val error = GraphqlErrorBuilder
                     .newError()
@@ -72,7 +72,7 @@ class MustHaveCardBrandDirectiveInstrumentation : SimpleInstrumentation() {
 
     private fun List<Extract>.containsBrand(requiredBrand: String) = any { it.card.brand.contains(requiredBrand) }
 
-    private fun DataFetcher<*>.extratcs(env: DataFetchingEnvironment): List<Extract> = this.get(env) as List<Extract>
+    private fun DataFetcher<*>.extracts(env: DataFetchingEnvironment): List<Extract> = this.get(env) as List<Extract>
 
     companion object {
         const val DIRECTIVE_NAME = "RequiredCardBrand"
