@@ -16,13 +16,13 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
 
         if (parameters.singleField.hasDirective(DIRECTIVE_NAME)) {
             addErrorIfNull(parameters)
-        }
-
-        // A `Instrumentacão` executa em TODOS os nós, independente se tem ou não a configuração na query
-        // Desta forma, poderíamos validar se este nó contém filhos com required
-        // (ignore os "netos", pois chegará a vez deles ainda)
-        if (parameters.asFetchedValue.isNull()) {
-            checkIfHaveRequiredChildren(parameters)
+        } else {
+            // A `Instrumentacão` executa em TODOS os nós, independente se tem ou não a configuração na query
+            // Desta forma, poderíamos validar se este nó contém filhos com required
+            // (ignore os "netos", pois chegará a vez deles ainda)
+            if (parameters.asFetchedValue.isNull()) {
+                checkIfHaveRequiredChildren(parameters)
+            }
         }
 
         return super.beginFieldComplete(parameters)
