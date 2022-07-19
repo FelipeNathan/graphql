@@ -31,7 +31,7 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
     private fun checkIfHaveRequiredChildrens(parameters: InstrumentationFieldCompleteParameters) {
         parameters.singleField.selectionSet.selections.forEach {
             if (it is Field && it.hasDirective(DIRECTIVE_NAME)) {
-                parameters.executionContext.addError(RequiredFieldError(parameters.fieldPath))
+                parameters.executionContext.addError(RequiredFieldError(it.name))
             }
         }
     }

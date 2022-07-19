@@ -13,7 +13,6 @@ class ObkRepository {
 val ofs = listOf(
     OpenFinanceData(
         id = "1",
-        extracts = listOf()
     ),
 
     OpenFinanceData(
