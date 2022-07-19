@@ -22,13 +22,13 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
         // Desta forma, poderíamos validar se este nó contém filhos com required
         // (ignore os "netos", pois chegará a vez deles ainda)
         if (parameters.asFetchedValue.isNull()) {
-            checkIfHaveRequiredChildrens(parameters)
+            checkIfHaveRequiredChildren(parameters)
         }
 
         return super.beginFieldComplete(parameters)
     }
 
-    private fun checkIfHaveRequiredChildrens(parameters: InstrumentationFieldCompleteParameters) {
+    private fun checkIfHaveRequiredChildren(parameters: InstrumentationFieldCompleteParameters) {
         parameters.singleField.selectionSet.selections.forEach {
             if (it is Field && it.hasDirective(DIRECTIVE_NAME)) {
                 parameters.executionContext.addError(RequiredFieldError(it.name))
