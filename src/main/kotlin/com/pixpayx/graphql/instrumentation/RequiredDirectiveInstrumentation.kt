@@ -83,7 +83,7 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
             }
         } else {
             val container = (field as SelectionSetContainer<*>)
-            container.selectionSet.selections.forEach {
+            container.selectionSet?.selections?.forEach {
                 addErrorIfFieldHaveRequiredDirective(it, parameters, field)
             }
         }
