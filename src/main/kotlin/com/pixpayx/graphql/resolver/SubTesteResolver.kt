@@ -8,7 +8,7 @@ class SubTesteResolver : GraphQLResolver<SubTeste> {
     override val type = "Teste"
     override val fieldName = "subTeste"
     override val fieldDataFetcher: DataFetchingEnvironment.() -> SubTeste? = {
-        SubTeste("TEEESTE")
+        null
     }
 }
 
