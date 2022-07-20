@@ -108,6 +108,7 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
     private fun getFullPath(fieldPath: String, parentPath: String?, rootPath: String): String {
         val path = parentPath?.run {
             when {
+                isNullOrBlank() -> ""
                 endsWith("/") -> this
                 else -> "$this/"
             }
