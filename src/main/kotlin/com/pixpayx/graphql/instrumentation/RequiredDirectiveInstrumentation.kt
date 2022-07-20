@@ -112,7 +112,7 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
                 endsWith("/") -> this
                 else -> "$this/"
             }
-        }
+        } ?: ""
         return "${rootPath}/$path${fieldPath}"
     }
 
