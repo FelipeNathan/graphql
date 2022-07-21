@@ -126,7 +126,7 @@ class RequiredDirectiveInstrumentation : SimpleInstrumentation() {
         get() = executionStepInfo.path.toString()
 
     private val InstrumentationFieldCompleteParameters.queryFields: List<Selection<*>>
-        get() = executionStepInfo.field.singleField.selectionSet.selections
+        get() = executionStepInfo.field.singleField.selectionSet?.selections.orEmpty()
 
     companion object {
         const val DIRECTIVE_NAME = "Required"
