@@ -1,6 +1,9 @@
 package com.pixpayx.graphql.configuration
 
 import com.pixpayx.graphql.directive.DirectiveResolver
+import com.pixpayx.graphql.model.customtests.Account
+import com.pixpayx.graphql.model.customtests.CreditAccount
+import com.pixpayx.graphql.model.customtests.PrePaidAccount
 import com.pixpayx.graphql.resolver.GraphQLResolver
 import graphql.GraphQL
 import graphql.execution.instrumentation.ChainedInstrumentation
@@ -29,6 +32,15 @@ class GraphQLProvider(
                     .newRuntimeWiring()
                     .resolvers(dataFetchers)
                     .directives(directives)
+                    .type("Account") {
+                        it.typeResolver { resolver ->
+                            when (resolver.getObject<Account>()) {
+                                is CreditAccount -> resolver.schema.getObjectType("CreditAccount")
+                                is PrePaidAccount -> resolver.schema.getObjectType("PrePaidAccount")
+                                else -> resolver.schema.getObjectType("Account")
+                            }
+                        }
+                    }
                     .build()
 
                 val schema = SchemaGenerator().makeExecutableSchema(typeDefinitionRegistry, runtimeWiring)

@@ -5,8 +5,6 @@ schema {
 type Query {
     user(id: Int): User
     users: [User]!
-    openFinance: OpenFinanceData
-    teste: Teste
 }
 
 ### User definition
@@ -14,37 +12,27 @@ type User {
     id: Int,
     type: String,
     name: String,
-    address: Address
+    address: Address @Auth,
+    accounts: [Account]
 }
 
 type Address {
     street: String
 }
 
-### Open Finance Definition
-type OpenFinanceData {
-    id: ID,
-    extracts: [Extract]
+interface Account {
+    name: String
 }
 
-type Extract {
-    card: Card @Auth
-    balance: Float
-}
-
-type Card {
+type CreditAccount implements Account{
+    name: String
     brand: String
 }
 
-### Another hierarchy definition
-type Teste {
-    subTeste: SubTeste
-}
-
-type SubTeste {
-    id: ID
+type PrePaidAccount implements Account{
+    name: String
+    useCheck: Boolean
 }
 
 directive @Auth on FIELD_DEFINITION
 directive @Required on FIELD
-directive @RequiredCardBrand(brand: String) on FIELD
