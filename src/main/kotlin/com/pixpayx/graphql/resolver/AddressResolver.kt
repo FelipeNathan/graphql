@@ -2,23 +2,22 @@ package com.pixpayx.graphql.resolver
 
 import com.pixpayx.graphql.model.customtests.Address
 import com.pixpayx.graphql.model.customtests.User
+import com.pixpayx.graphql.repository.AddressRepository
 import graphql.schema.DataFetchingEnvironment
 import org.springframework.stereotype.Component
+import org.springframework.stereotype.Repository
 
 @Component
-class AddressResolver : GraphQLResolver<Address> {
+class AddressResolver(
+    val addressRepository: AddressRepository
+) : GraphQLResolver<Address> {
     override val type = "User"
     override val fieldName = "address"
     override val fieldDataFetcher: DataFetchingEnvironment.() -> Address? = {
-        addresses.firstOrNull { it.userId == getSource<User>().id }
+        addressRepository.findByUser(getSource<User>().id)
     }
 }
 
-// Some repository result (findAddressByUser)
-val addresses = listOf(
-    Address("Bora cumê pinhão", 1L),
-    Address("Mas em curitiba é mais frio", 2L)
-)
 
 /**
  * {
